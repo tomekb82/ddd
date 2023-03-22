@@ -4,7 +4,7 @@ import spock.lang.Specification
 
 import java.time.Instant
 
-class PurchaseServiceTest extends Specification {
+class zPurchaseServiceTest extends Specification {
 
     private static final PurchaseId PURCHASE_ID = new PurchaseId(UUID.randomUUID())
 
@@ -12,8 +12,11 @@ class PurchaseServiceTest extends Specification {
     private static final Product EBOOK = new Product("EBOOK")
 
     PurchaseRepository purchaseRepository = new PurchaseDatabase()
-    ExtraProductPolicy extraProductPolicy = new BuyOneGetSomeFreeProductPolicy();
-    PurchaseService purchaseService = new PurchaseService(purchaseRepository, extraProductPolicy)
+    ExtraProductPolicy extraProductPolicy = new BuyOneGetSomeFreeProductPolicy()
+    DomainEventPublisher justForwardDomainEventPublisher = new JustForwardDomainEventPublisher();;
+    EventsStorage eventsStorage;
+    DomainEventPublisher publisher = new StoreAndForwardDomainEventPublisher(justForwardDomainEventPublisher, eventsStorage)
+    PurchaseService purchaseService = new PurchaseService(purchaseRepository, extraProductPolicy, publisher)
 
     def "can add a subscription"() {
         given:

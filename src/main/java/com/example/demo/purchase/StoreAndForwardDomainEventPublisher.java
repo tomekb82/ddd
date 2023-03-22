@@ -12,12 +12,12 @@ public class StoreAndForwardDomainEventPublisher implements DomainEventPublisher
 
     @Override
     public void publish(IDomainEvent event) {
-        eventsStorage.save(event);
+        //eventsStorage.save(event);
     }
 
     public void publicPeriodically() {
         List<IDomainEvent> events = eventsStorage.yetToPublish();
         events.forEach(domainEventPublisher::publish);
-        eventsStorage.markAsSent(events);
+        //eventsStorage.markAsSent(events);
     }
 }

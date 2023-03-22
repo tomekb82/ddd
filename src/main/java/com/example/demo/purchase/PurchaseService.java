@@ -7,7 +7,7 @@ public class PurchaseService {
 
    private final PurchaseRepository purchaseRepository;
    private final ExtraProductPolicy extraProductPolicy;
-   private final StoreAndForwardDomainEventPublisher publisher;
+   private final DomainEventPublisher publisher;
 
    void addProduct(Product product, PurchaseId purchaseId) {
        Purchase purchase = purchaseRepository.findyBy(purchaseId);
