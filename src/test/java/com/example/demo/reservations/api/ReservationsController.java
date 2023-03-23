@@ -4,17 +4,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @RestController("/api/")
 public class ReservationsController {
 
-    private final RoomRepository roomRepository = new RoomDatabaseRepository();
-    private final ReservationRepository reservationRepository = new ReservationDatabaseRepository();
     private final RoomReservationService roomReservationService
-            = new RoomReservationService(roomRepository, reservationRepository);
+            = new RoomReservationService(
+                    new RoomDatabaseRepository(),
+                    new ReservationDatabaseRepository(),
+                    new EventDatabaseRepository());
 
     @PostMapping("/rooms")
     ResponseEntity addRoom(@RequestBody Room room) {
@@ -42,10 +42,16 @@ public class ReservationsController {
         return ResponseEntity.ok(room);
     }
 
-    @GetMapping("/{id}")
+    @PutMapping("/{id}")
     ResponseEntity updateRoom(@PathVariable Room room) {
         roomReservationService.updateRoom(room);
         return ResponseEntity.accepted().build();
+    }
+
+    @DeleteMapping("/rooms/{id}")
+    ResponseEntity deleteRoom(@RequestBody UUID roomId) {
+        roomReservationService.deleteRoom(new RoomId(roomId));
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/rooms/{id}/reservations")
@@ -75,28 +81,49 @@ public class ReservationsController {
     }
 
     @PutMapping("/rooms/{roomId}/reservations/{id}")
-    ResponseEntity updateReservation(@RequestBody Reservation reservation) {
+    ResponseEntity updateReservation(
+            @PathVariable UUID roomId,
+            @PathVariable UUID reservationId,
+            @RequestBody Reservation reservation) {
         roomReservationService.updateReservation(reservation);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.accepted().build();
+    }
+
+    @PutMapping("/rooms/{roomId}/reservations/{id}")
+    ResponseEntity cancelReservation(@PathVariable UUID roomId, @PathVariable UUID reservationId) {
+        roomReservationService.cancelReservation(new ReservationId(reservationId));
+        return ResponseEntity.accepted().build();
     }
 
     @PostMapping("/events")
     ResponseEntity addEvent(@RequestBody Event event) {
-        return ResponseEntity.ok(event);
+        Event saved = roomReservationService.addEvent(event);
+        return ResponseEntity
+                .created(URI.create(String.format("/api/events/{}", saved.eventId)))
+                .build();
+    }
+
+    @PutMapping("/events/{id}")
+    ResponseEntity updateEvent(@PathVariable UUID eventId, @RequestBody Event event) {
+        Event saved = roomReservationService.updateEvent(event);
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/events")
-    ResponseEntity getAllEvents(@RequestBody Event event) {
-        return ResponseEntity.ok(event);
+    ResponseEntity getAllEvents() {
+        List<Event> events = roomReservationService.getAllEvents();
+        return ResponseEntity.ok(events);
     }
 
     @GetMapping("/events/{id}")
-    ResponseEntity getEventById(@RequestBody Event event) {
+    ResponseEntity getEventById(@PathVariable UUID eventId) {
+        Event event = roomReservationService.getEventById(new EventId(eventId));
         return ResponseEntity.ok(event);
     }
 
     @DeleteMapping("/events/{id}")
-    ResponseEntity deleteEvents(@RequestBody Event event) {
-        return ResponseEntity.ok(event);
+    ResponseEntity deleteEvents(@PathVariable UUID eventId) {
+        roomReservationService.cancelEvent(new EventId(eventId));
+        return ResponseEntity.noContent().build();
     }
 }
