@@ -4,7 +4,7 @@ import spock.lang.Specification
 
 import java.time.Instant
 
-class zPurchaseServiceTest extends Specification {
+class PurchaseServiceTest extends Specification {
 
     private static final PurchaseId PURCHASE_ID = new PurchaseId(UUID.randomUUID())
 
