@@ -33,4 +33,9 @@ public class ReservationDatabaseRepository implements ReservationRepository{
                 .toList();
     }
 
+    @Override
+    public Reservation getById(ReservationId reservationId) {
+        return reservations.get(reservationId);
+    }
+
 }

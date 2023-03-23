@@ -60,21 +60,22 @@ public class RoomReservationService {
     }
 
     public void cancelEvent(EventId eventId) {
+        eventRepository.cancel(eventId);
     }
 
     public Event getEventById(EventId eventId) {
-        return null;
+        return eventRepository.getById(eventId);
     }
 
     public List<Event> getAllEvents() {
-        return null;
+        return eventRepository.getAll();
     }
 
     public Event updateEvent(Event event) {
-        return null;
+        return eventRepository.update(event);
     }
 
     public Event addEvent(Event event) {
-        return null;
+        return eventRepository.add(event);
     }
 }
