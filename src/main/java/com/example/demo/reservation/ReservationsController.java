@@ -1,4 +1,4 @@
-package com.example.demo.reservations.api;
+package com.example.demo.reservation;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
