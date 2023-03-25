@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class ReservationDatabaseRepository implements ReservationRepository{
+class ReservationDatabaseRepository implements ReservationRepository{
 
     Map<ReservationId, Reservation> reservations = new HashMap<>();
 

@@ -4,10 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EventDatabaseRepository implements EventRepository {
+class EventDatabaseRepository implements EventRepository {
 
     Map<EventId, Event> events = new HashMap<>();
-
 
     @Override
     public void cancel(EventId eventId) {
@@ -26,11 +25,11 @@ public class EventDatabaseRepository implements EventRepository {
 
     @Override
     public Event update(Event event) {
-        return events.put(event.eventId, event);
+        return events.put(event.eventId(), event);
     }
 
     @Override
     public Event add(Event event) {
-        return events.put(event.eventId, event);
+        return events.put(event.eventId(), event);
     }
 }

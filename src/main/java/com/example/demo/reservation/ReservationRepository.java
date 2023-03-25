@@ -2,7 +2,7 @@ package com.example.demo.reservation;
 
 import java.util.List;
 
-public interface ReservationRepository {
+interface ReservationRepository {
 
     Reservation add(Reservation reservation);
 

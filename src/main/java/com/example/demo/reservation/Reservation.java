@@ -7,11 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class Reservation {
-    enum Type { Room, Conference}
-    enum TableSet {TRIANGLE, SQUARE}
-    enum Status {NEW, CANCELED, COMPLETED}
-
+class Reservation {
     ReservationId reservationId;
     RoomId roomId;
     Type type;
@@ -19,4 +15,9 @@ public class Reservation {
     int numOfPeople;
     TableSet tableSet;
     Status status;
+
+    enum Type { Room, Conference}
+    enum TableSet {TRIANGLE, SQUARE}
+    enum Status {NEW, CANCELED, COMPLETED}
+
 }

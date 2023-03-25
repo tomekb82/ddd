@@ -2,7 +2,7 @@ package com.example.demo.reservation;
 
 import java.util.List;
 
-public interface EventRepository {
+interface EventRepository {
     void cancel(EventId eventId);
 
     Event getById(EventId eventId);

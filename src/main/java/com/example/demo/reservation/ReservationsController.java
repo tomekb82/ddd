@@ -99,7 +99,7 @@ public class ReservationsController {
     ResponseEntity addEvent(@RequestBody Event event) {
         Event saved = roomReservationService.addEvent(event);
         return ResponseEntity
-                .created(URI.create(String.format("/api/events/{}", saved.eventId)))
+                .created(URI.create(String.format("/api/events/{}", saved.eventId())))
                 .build();
     }
 
