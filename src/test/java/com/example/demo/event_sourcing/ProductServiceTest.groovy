@@ -68,7 +68,9 @@ class ProductServiceTest extends Specification {
         Product snapshot = productService.getSnapshot(aggregateId)
         then:
         4 == events.events().size()
-        snapshot
+        PRODUCT_ID == snapshot.id
+        PRODUCT_NAME == snapshot.name
+        2345 == snapshot.prize
     }
 
     Product aProduct() {

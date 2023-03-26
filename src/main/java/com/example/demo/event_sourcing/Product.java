@@ -43,7 +43,7 @@ public class Product {
 
     private Product priceUpdated(PriceUpdated event){
         this.prize = event.getPrice();
-        return new Product(prize);
+        return new Product(id, name, prize);
     }
 
 
