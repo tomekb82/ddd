@@ -1,11 +1,34 @@
 package com.example.demo.subscription;
 
+import io.vavr.Predicates;
+import lombok.AllArgsConstructor;
+
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static com.example.demo.subscription.Subscription.Status.*;
+import static io.vavr.API.*;
+import static io.vavr.collection.List.ofAll;
 
 class Subscription {
+
+    public static Subscription recreateFrom(List<DomainEvent> domainEvents, Subscription initialState) {
+        return ofAll(domainEvents)
+                .foldLeft(initialState, Subscription::apply);
+    }
+
+    private Subscription apply(DomainEvent nextEvent) {
+        return Match(nextEvent).of(
+                Case($(Predicates.instanceOf(SubscriptionActivated.class)), this::handle),
+                Case($(Predicates.instanceOf(SubscriptionDeactivated.class)), this::handle),
+                Case($(Predicates.instanceOf(SubscriptionMarkedPastDue.class)), this::handle),
+                Case($(Predicates.instanceOf(SubscriptionResumed.class)), this::handle),
+                Case($(Predicates.instanceOf(SubscriptionPaused.class)), this::handle)
+        );
+    }
 
     enum Status {
         New, Activated, Paused, PastDue, Deactivated
@@ -15,31 +38,57 @@ class Subscription {
     private final SubscriptionId subscriptionId;
     private Pauses pauses = Pauses.defaultPauses();
     private Status status = New;
+    private List<DomainEvent> pendingEvents = new ArrayList<>();
 
     Subscription(Clock clock, SubscriptionId subscriptionId){
         this.clock = clock;
         this.subscriptionId = subscriptionId;
     }
 
+    Subscription(Clock clock, SubscriptionId subscriptionId, Pauses pauses, Status status, List<DomainEvent> pendingEvents){
+        this.clock = clock;
+        this.subscriptionId = subscriptionId;
+        this.pauses = pauses;
+        this.status = status;
+        this.pendingEvents = pendingEvents;
+    }
+
+    public SubscriptionId id() {
+        return subscriptionId;
+    }
+
+    public List<DomainEvent> getPendingEvents() {
+        return Collections.unmodifiableList(pendingEvents);
+    }
+
+
+    public void flushEvents() {
+        pendingEvents.clear();
+    }
+
     Result activate() {
-        subscriptionActivated(new SubscriptionActivated(subscriptionId, Instant.now(clock)));
+        handle(new SubscriptionActivated(id(), Instant.now(clock)));
         return Result.success();
     }
 
-    void subscriptionActivated(SubscriptionActivated event){
+    Subscription handle(SubscriptionActivated event){
+        pendingEvents.add(event);
         this.status = Activated;
+        return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
 
     Result deactivate() {
         if(isActive()){
-            subscriptionDeactivated(new SubscriptionDeactivated(subscriptionId, Instant.now(clock)));
+            handle(new SubscriptionDeactivated(id(), Instant.now(clock)));
             return Result.success();
         }
         return Result.failure("error in deactivate");
     }
 
-    void subscriptionDeactivated(SubscriptionDeactivated event){
+    Subscription handle(SubscriptionDeactivated event){
+        pendingEvents.add(event);
         this.status = Deactivated;
+        return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
 
     Result pause() {
@@ -48,36 +97,42 @@ class Subscription {
 
     Result pause(Instant when) { // komenda - niebieska karteczka
         if (isActive() && pauses.canPauseAt(when)){ // niezmienniki - zolte karteczki
-            subscriptionPaused(new SubscriptionPaused(subscriptionId, Instant.now(clock), when)); // zdarzenia domenowe - pomaranczowe karteczki
+            handle(new SubscriptionPaused(subscriptionId, Instant.now(clock), when)); // zdarzenia domenowe - pomaranczowe karteczki
             return Result.success();
         }
         return Result.failure("error in pause");
     }
 
-    private void subscriptionPaused(SubscriptionPaused event) {
+    Subscription handle(SubscriptionPaused event) {
+        pendingEvents.add(event);
         pauses = pauses.withNewPauseAt(event.timeOfPause);
         status = Paused;
+        return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
 
     Result resume() {
         if (isPaused()) {
-            subscriptionResumed(new SubscriptionResumed(subscriptionId, Instant.now(clock)));
+            handle(new SubscriptionResumed(id(), Instant.now(clock)));
             return Result.success();
         }
         return Result.failure("error in resume");
     }
 
-    private void subscriptionResumed(SubscriptionResumed event) {
+    Subscription handle(SubscriptionResumed event) {
+        pendingEvents.add(event);
         status = Activated;
+        return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
 
     Result markAsPastDue() {
-        subscriptionMarkPastDued(new SubscriptionMarkedPastDue(subscriptionId, Instant.now(clock)));
+        handle(new SubscriptionMarkedPastDue(id(), Instant.now(clock)));
         return Result.success();
     }
 
-    void subscriptionMarkPastDued(SubscriptionMarkedPastDue event) {
+    Subscription handle(SubscriptionMarkedPastDue event) {
+        pendingEvents.add(event);
         status = PastDue;
+        return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
 
     Subscription applySnapshot(SnapshotEvent event) {
