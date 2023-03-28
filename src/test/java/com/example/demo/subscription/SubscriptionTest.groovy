@@ -56,4 +56,37 @@ class SubscriptionTest extends Specification{
         expect:
             subscription.pause() == Result.failure
     }
+
+    def "should not pause if less than 10 days from last pause"() {
+        given:
+            subscription.activate()
+        and:
+            assert subscription.pause(someDay) == Result.success
+        and:
+            assert subscription.resume() == Result.success
+        expect:
+            subscription.pause(someDay) == Result.failure
+    }
+
+    def "should pause if more than 10 days from last pause"() {
+        given:
+            subscription.activate()
+        and:
+            assert subscription.pause(someDay) == Result.success
+            assert subscription.resume() == Result.success
+        and:
+            assert subscription.pause(elevenDaysLater) == Result.success
+            assert subscription.resume() == Result.success
+        expect:
+            subscription.pause(twentyOneDaysLater) == Result.failure
+    }
+
+    def "should resume paused sub"() {
+        given:
+            subscription.activate()
+        and:
+            assert subscription.pause() == Result.success
+        expect:
+            subscription.resume() == Result.success
+    }
 }

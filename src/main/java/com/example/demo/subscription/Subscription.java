@@ -21,6 +21,10 @@ class Subscription {
         this.subscriptionId = subscriptionId;
     }
 
+    Subscription applySnapshot(SnapshotEvent event) {
+        return null;
+    }
+
     Result activate() {
         this.status = Activated;
         return Result.success;
