@@ -26,7 +26,7 @@ class SubscriptionTest extends Specification{
 
     def "should deactivate activated sub"() {
         given:
-            subscription.activate()
+            subscription.handle(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
         expect:
             subscription.deactivate().isSuccessful()
     }
