@@ -1,6 +1,5 @@
 package com.example.demo.subscription
 
-
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -14,7 +13,7 @@ import static java.time.temporal.ChronoUnit.DAYS
 class SubscriptionTest extends Specification{
     static final Instant someDay = LocalDate.of(1989, 12, 5).atStartOfDay(ZoneId.systemDefault()).toInstant()
     static final Instant elevenDaysLater = someDay.plus(11, DAYS)
-    static final Instant twentyOneDaysLater = someDay.plus(21, DAYS)
+    static final Instant twentyTwoDaysLater = someDay.plus(22, DAYS)
     Clock fixedClock = Clock.fixed(someDay, ZoneId.systemDefault())
 
     @Subject
@@ -51,7 +50,7 @@ class SubscriptionTest extends Specification{
             assert subscription.pause(elevenDaysLater) == Result.success
             assert subscription.resume() == Result.success
         and:
-            assert subscription.pause(twentyOneDaysLater) == Result.success
+            assert subscription.pause(twentyTwoDaysLater) == Result.success
             assert subscription.resume() == Result.success
         expect:
             subscription.pause() == Result.failure
@@ -78,7 +77,7 @@ class SubscriptionTest extends Specification{
             assert subscription.pause(elevenDaysLater) == Result.success
             assert subscription.resume() == Result.success
         expect:
-            subscription.pause(twentyOneDaysLater) == Result.failure
+            subscription.pause(twentyTwoDaysLater) == Result.failure
     }
 
     def "should resume paused sub"() {

@@ -21,46 +21,62 @@ class Subscription {
         this.subscriptionId = subscriptionId;
     }
 
-    Subscription applySnapshot(SnapshotEvent event) {
-        return null;
+    Result activate() {
+        subscriptionActivated(new SubscriptionActivated(subscriptionId, Instant.now(clock)));
+        return Result.success;
     }
 
-    Result activate() {
+    void subscriptionActivated(SubscriptionActivated event){
         this.status = Activated;
-        return Result.success;
     }
 
     Result deactivate() {
         if(isActive()){
-            this.status = Deactivated;
+            subscriptionDeactivated(new SubscriptionDeactivated(subscriptionId, Instant.now(clock)));
             return Result.success;
         }
         return Result.failure;
+    }
+
+    void subscriptionDeactivated(SubscriptionDeactivated event){
+        this.status = Deactivated;
     }
 
     Result pause() {
         return pause(Instant.now(clock));
     }
 
-    Result pause(Instant when) {
-        if (isActive() && pauses.canPauseAt(when)){
-            pauses = pauses.withNewPauseAt(when);
-            status = Paused;
+    Result pause(Instant when) { // komenda - niebieska karteczka
+        if (isActive() && pauses.canPauseAt(when)){ // niezmienniki - zolte karteczki
+            subscriptionPaused(new SubscriptionPaused(subscriptionId, Instant.now(clock), when)); // zdarzenia domenowe - pomaranczowe karteczki
             return Result.success;
         }
         return Result.failure;
     }
 
-    private boolean isActive() {
-        return status == Activated;
+    private void subscriptionPaused(SubscriptionPaused event) {
+        pauses = pauses.withNewPauseAt(event.timeOfPause);
+        status = Paused;
     }
 
     Result resume() {
         if (isPaused()) {
-            status = Activated;
+            subscriptionResumed(new SubscriptionResumed(subscriptionId, Instant.now(clock)));
             return Result.success;
         }
         return Result.failure;
+    }
+
+    private void subscriptionResumed(SubscriptionResumed event) {
+        status = Activated;
+    }
+
+    Subscription applySnapshot(SnapshotEvent event) {
+        return null;
+    }
+
+    private boolean isActive() {
+        return status == Activated;
     }
 
     private boolean isPaused() {
