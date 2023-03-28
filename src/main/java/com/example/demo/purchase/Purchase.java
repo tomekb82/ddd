@@ -31,10 +31,13 @@ class Purchase extends Entity {
     }
 
     void addProduct(Product product, ExtraProductPolicy extraProductPolicy){
-        products.products().add(product);
-        extraProductPolicy.getExtraProductsFor(product)
-                .forEach(extraProduct -> freeProducts.products().add(extraProduct));
-        raise(new ProductAdded());
+        var spec = new FreeProductAlreadyRemovedSpec();
+        if (spec.satisfiedBy(product)){
+            products.products().add(product);
+            extraProductPolicy.getExtraProductsFor(product)
+                    .forEach(extraProduct -> freeProducts.products().add(extraProduct));
+            raise(new ProductAdded());
+        }
     }
 
     void removeProduct(Product product, ExtraProductPolicy extraProductPolicy){
