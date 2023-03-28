@@ -23,7 +23,7 @@ class Subscription {
 
     Result activate() {
         subscriptionActivated(new SubscriptionActivated(subscriptionId, Instant.now(clock)));
-        return Result.success;
+        return Result.success();
     }
 
     void subscriptionActivated(SubscriptionActivated event){
@@ -33,9 +33,9 @@ class Subscription {
     Result deactivate() {
         if(isActive()){
             subscriptionDeactivated(new SubscriptionDeactivated(subscriptionId, Instant.now(clock)));
-            return Result.success;
+            return Result.success();
         }
-        return Result.failure;
+        return Result.failure("error in deactivate");
     }
 
     void subscriptionDeactivated(SubscriptionDeactivated event){
@@ -49,9 +49,9 @@ class Subscription {
     Result pause(Instant when) { // komenda - niebieska karteczka
         if (isActive() && pauses.canPauseAt(when)){ // niezmienniki - zolte karteczki
             subscriptionPaused(new SubscriptionPaused(subscriptionId, Instant.now(clock), when)); // zdarzenia domenowe - pomaranczowe karteczki
-            return Result.success;
+            return Result.success();
         }
-        return Result.failure;
+        return Result.failure("error in pause");
     }
 
     private void subscriptionPaused(SubscriptionPaused event) {
@@ -62,13 +62,22 @@ class Subscription {
     Result resume() {
         if (isPaused()) {
             subscriptionResumed(new SubscriptionResumed(subscriptionId, Instant.now(clock)));
-            return Result.success;
+            return Result.success();
         }
-        return Result.failure;
+        return Result.failure("error in resume");
     }
 
     private void subscriptionResumed(SubscriptionResumed event) {
         status = Activated;
+    }
+
+    Result markAsPastDue() {
+        subscriptionMarkPastDued(new SubscriptionMarkedPastDue(subscriptionId, Instant.now(clock)));
+        return Result.success();
+    }
+
+    void subscriptionMarkPastDued(SubscriptionMarkedPastDue event) {
+        status = PastDue;
     }
 
     Subscription applySnapshot(SnapshotEvent event) {

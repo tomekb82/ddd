@@ -21,71 +21,71 @@ class SubscriptionTest extends Specification{
 
     def "should activate new sub"() {
         expect:
-            subscription.activate() == Result.success
+            subscription.activate().isSuccessful()
     }
 
     def "should deactivate activated sub"() {
         given:
             subscription.activate()
         expect:
-            subscription.deactivate() == Result.success
+            subscription.deactivate().isSuccessful()
     }
 
     def "should pause activated sub"() {
         given:
             subscription.activate()
         expect:
-            subscription.pause() == Result.success
+            subscription.pause().isSuccessful()
     }
 
     def "should not pause not active sub"() {
         expect:
-            subscription.pause() == Result.failure
+            subscription.pause().isFailure()
     }
 
     def "should not pause when all pauses used"() {
         given:
             subscription.activate()
         and:
-            assert subscription.pause(elevenDaysLater) == Result.success
-            assert subscription.resume() == Result.success
+            assert subscription.pause(elevenDaysLater).isSuccessful()
+            assert subscription.resume().isSuccessful()
         and:
-            assert subscription.pause(twentyTwoDaysLater) == Result.success
-            assert subscription.resume() == Result.success
+            assert subscription.pause(twentyTwoDaysLater).isSuccessful()
+            assert subscription.resume().isSuccessful()
         expect:
-            subscription.pause() == Result.failure
+            subscription.pause().isFailure()
     }
 
     def "should not pause if less than 10 days from last pause"() {
         given:
             subscription.activate()
         and:
-            assert subscription.pause(someDay) == Result.success
+            assert subscription.pause(someDay).isSuccessful()
         and:
-            assert subscription.resume() == Result.success
+            assert subscription.resume().isSuccessful()
         expect:
-            subscription.pause(someDay) == Result.failure
+            subscription.pause(someDay).isFailure()
     }
 
     def "should pause if more than 10 days from last pause"() {
         given:
             subscription.activate()
         and:
-            assert subscription.pause(someDay) == Result.success
-            assert subscription.resume() == Result.success
+            assert subscription.pause(someDay).isSuccessful()
+            assert subscription.resume().isSuccessful()
         and:
-            assert subscription.pause(elevenDaysLater) == Result.success
-            assert subscription.resume() == Result.success
+            assert subscription.pause(elevenDaysLater).isSuccessful()
+            assert subscription.resume().isSuccessful()
         expect:
-            subscription.pause(twentyTwoDaysLater) == Result.failure
+            subscription.pause(twentyTwoDaysLater).isSuccessful()
     }
 
     def "should resume paused sub"() {
         given:
             subscription.activate()
         and:
-            assert subscription.pause() == Result.success
+            assert subscription.pause().isSuccessful()
         expect:
-            subscription.resume() == Result.success
+            subscription.resume().isSuccessful()
     }
 }
