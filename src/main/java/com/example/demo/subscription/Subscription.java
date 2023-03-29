@@ -22,11 +22,11 @@ class Subscription {
 
     private Subscription apply(DomainEvent nextEvent) {
         return Match(nextEvent).of(
-                Case($(Predicates.instanceOf(SubscriptionActivated.class)), this::handle),
-                Case($(Predicates.instanceOf(SubscriptionDeactivated.class)), this::handle),
-                Case($(Predicates.instanceOf(SubscriptionMarkedPastDue.class)), this::handle),
-                Case($(Predicates.instanceOf(SubscriptionResumed.class)), this::handle),
-                Case($(Predicates.instanceOf(SubscriptionPaused.class)), this::handle)
+                Case($(Predicates.instanceOf(SubscriptionActivated.class)), (event) -> this.handle(event, true)),
+                Case($(Predicates.instanceOf(SubscriptionDeactivated.class)), (event) -> this.handle(event, true)),
+                Case($(Predicates.instanceOf(SubscriptionMarkedPastDue.class)), (event) -> this.handle(event, true)),
+                Case($(Predicates.instanceOf(SubscriptionResumed.class)), (event) -> this.handle(event, true)),
+                Case($(Predicates.instanceOf(SubscriptionPaused.class)), (event) -> this.handle(event, true))
         );
     }
 
@@ -45,7 +45,8 @@ class Subscription {
         this.subscriptionId = subscriptionId;
     }
 
-    Subscription(Clock clock, SubscriptionId subscriptionId, Pauses pauses, Status status, List<DomainEvent> pendingEvents){
+    Subscription(Clock clock, SubscriptionId subscriptionId, Pauses pauses,
+                 Status status, List<DomainEvent> pendingEvents){
         this.clock = clock;
         this.subscriptionId = subscriptionId;
         this.pauses = pauses;
@@ -61,17 +62,16 @@ class Subscription {
         return Collections.unmodifiableList(pendingEvents);
     }
 
-
     public void flushEvents() {
         pendingEvents.clear();
     }
 
     Result activate() {
-        handle(new SubscriptionActivated(id(), Instant.now(clock)));
+        handle(new SubscriptionActivated(id(), Instant.now(clock)), false);
         return Result.success();
     }
 
-    Subscription handle(SubscriptionActivated event){
+    Subscription handle(SubscriptionActivated event, boolean isHistory){
         pendingEvents.add(event);
         this.status = Activated;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
@@ -79,13 +79,13 @@ class Subscription {
 
     Result deactivate() {
         if(isActive()){
-            handle(new SubscriptionDeactivated(id(), Instant.now(clock)));
+            handle(new SubscriptionDeactivated(id(), Instant.now(clock)), false);
             return Result.success();
         }
         return Result.failure("error in deactivate");
     }
 
-    Subscription handle(SubscriptionDeactivated event){
+    Subscription handle(SubscriptionDeactivated event, boolean isHistory){
         pendingEvents.add(event);
         this.status = Deactivated;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
@@ -97,14 +97,16 @@ class Subscription {
 
     Result pause(Instant when) { // komenda - niebieska karteczka
         if (isActive() && pauses.canPauseAt(when)){ // niezmienniki - zolte karteczki
-            handle(new SubscriptionPaused(subscriptionId, Instant.now(clock), when)); // zdarzenia domenowe - pomaranczowe karteczki
+            handle(new SubscriptionPaused(subscriptionId, Instant.now(clock), when), false); // zdarzenia domenowe - pomaranczowe karteczki
             return Result.success();
         }
         return Result.failure("error in pause");
     }
 
-    Subscription handle(SubscriptionPaused event) {
-        pendingEvents.add(event);
+    Subscription handle(SubscriptionPaused event, boolean isHistory) {
+        if (!isHistory){
+            pendingEvents.add(event);
+        }
         pauses = pauses.withNewPauseAt(event.timeOfPause);
         status = Paused;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
@@ -112,31 +114,27 @@ class Subscription {
 
     Result resume() {
         if (isPaused()) {
-            handle(new SubscriptionResumed(id(), Instant.now(clock)));
+            handle(new SubscriptionResumed(id(), Instant.now(clock)), false);
             return Result.success();
         }
         return Result.failure("error in resume");
     }
 
-    Subscription handle(SubscriptionResumed event) {
+    Subscription handle(SubscriptionResumed event, boolean isHistory) {
         pendingEvents.add(event);
         status = Activated;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
 
     Result markAsPastDue() {
-        handle(new SubscriptionMarkedPastDue(id(), Instant.now(clock)));
+        handle(new SubscriptionMarkedPastDue(id(), Instant.now(clock)), false);
         return Result.success();
     }
 
-    Subscription handle(SubscriptionMarkedPastDue event) {
+    Subscription handle(SubscriptionMarkedPastDue event, boolean isHistory) {
         pendingEvents.add(event);
         status = PastDue;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
-    }
-
-    Subscription applySnapshot(SnapshotEvent event) {
-        return null;
     }
 
     private boolean isActive() {

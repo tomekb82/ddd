@@ -10,7 +10,7 @@ import java.time.ZoneId
 class SubscriptionRepositoryTest extends Specification{
 
     @Subject
-    SubscriptionRepository repository = new InMemorySubscriptionRepository()
+    SubscriptionRepository repository = new EventSourceSubscriptionRepository() //InMemorySubscriptionRepository
 
     Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault())
 
@@ -27,7 +27,5 @@ class SubscriptionRepositoryTest extends Specification{
             Subscription load = repository.findById(sub.id())
         then:
             load.resume().isSuccessful()
-
-
     }
 }

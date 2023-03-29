@@ -26,14 +26,14 @@ class SubscriptionTest extends Specification{
 
     def "should deactivate activated sub"() {
         given:
-            subscription.handle(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
+            given(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
         expect:
             subscription.deactivate().isSuccessful()
     }
 
     def "should pause activated sub"() {
         given:
-            subscription.activate()
+            given(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
         expect:
             subscription.pause().isSuccessful()
     }
@@ -45,7 +45,7 @@ class SubscriptionTest extends Specification{
 
     def "should not pause when all pauses used"() {
         given:
-            subscription.activate()
+            given(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
         and:
             assert subscription.pause(elevenDaysLater).isSuccessful()
             assert subscription.resume().isSuccessful()
@@ -58,7 +58,7 @@ class SubscriptionTest extends Specification{
 
     def "should not pause if less than 10 days from last pause"() {
         given:
-            subscription.activate()
+            given(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
         and:
             assert subscription.pause(someDay).isSuccessful()
         and:
@@ -69,7 +69,7 @@ class SubscriptionTest extends Specification{
 
     def "should pause if more than 10 days from last pause"() {
         given:
-            subscription.activate()
+            given(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
         and:
             assert subscription.pause(someDay).isSuccessful()
             assert subscription.resume().isSuccessful()
@@ -82,10 +82,14 @@ class SubscriptionTest extends Specification{
 
     def "should resume paused sub"() {
         given:
-            subscription.activate()
+            given(new SubscriptionActivated(subscription.id(), Instant.now(fixedClock)))
         and:
             assert subscription.pause().isSuccessful()
         expect:
             subscription.resume().isSuccessful()
+    }
+
+    private void given(DomainEvent event) {
+        subscription.handle(event, true)
     }
 }

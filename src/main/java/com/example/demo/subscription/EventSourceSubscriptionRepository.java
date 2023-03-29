@@ -1,5 +1,6 @@
 package com.example.demo.subscription;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +21,6 @@ public class EventSourceSubscriptionRepository implements SubscriptionRepository
 
     @Override
     public Subscription findById(SubscriptionId subscriptionId) {
-        return Subscription.recreateFrom(storedEvents.get(subscriptionId), new Subscription(null, subscriptionId));
+        return Subscription.recreateFrom(storedEvents.get(subscriptionId), new Subscription(Clock.systemDefaultZone(), subscriptionId));
     }
 }
