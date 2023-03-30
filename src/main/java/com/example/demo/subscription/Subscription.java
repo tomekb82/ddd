@@ -1,7 +1,6 @@
 package com.example.demo.subscription;
 
 import io.vavr.Predicates;
-import lombok.AllArgsConstructor;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -72,7 +71,9 @@ class Subscription {
     }
 
     Subscription handle(SubscriptionActivated event, boolean isHistory){
-        pendingEvents.add(event);
+        if (!isHistory){
+            pendingEvents.add(event);
+        }
         this.status = Activated;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
@@ -86,7 +87,9 @@ class Subscription {
     }
 
     Subscription handle(SubscriptionDeactivated event, boolean isHistory){
-        pendingEvents.add(event);
+        if (!isHistory){
+            pendingEvents.add(event);
+        }
         this.status = Deactivated;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
@@ -121,7 +124,9 @@ class Subscription {
     }
 
     Subscription handle(SubscriptionResumed event, boolean isHistory) {
-        pendingEvents.add(event);
+        if (!isHistory){
+            pendingEvents.add(event);
+        }
         status = Activated;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
     }
@@ -132,7 +137,9 @@ class Subscription {
     }
 
     Subscription handle(SubscriptionMarkedPastDue event, boolean isHistory) {
-        pendingEvents.add(event);
+        if (!isHistory){
+            pendingEvents.add(event);
+        }
         status = PastDue;
         return new Subscription(clock, id(), pauses, status, pendingEvents);
     }

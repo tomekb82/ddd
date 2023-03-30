@@ -21,4 +21,14 @@ public class InMemorySubscriptionRepository implements SubscriptionRepository{
                 .findAny()
                 .orElse(null);
     }
+
+    @Override
+    public void saveSnapshot(SubscriptionId subscriptionId) {
+
+    }
+
+    @Override
+    public Subscription getSnapshot(SubscriptionId subscriptionId) {
+        return null;
+    }
 }

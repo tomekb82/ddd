@@ -28,4 +28,25 @@ class SubscriptionRepositoryTest extends Specification{
         then:
             load.resume().isSuccessful()
     }
+
+    def "should restore from snapshot"() {
+        given:
+            Subscription sub = new Subscription(fixedClock, SubscriptionId.newOne())
+        and:
+            sub.activate()
+        and:
+            sub.pause()
+        and:
+            repository.save(sub)
+        and:
+            sub.pause()
+        and:
+            repository.saveSnapshot(sub.id())
+        when:
+            Subscription snapshot = repository.getSnapshot(sub.id())
+        then:
+            snapshot.resume().isSuccessful()
+    }
+
+
 }

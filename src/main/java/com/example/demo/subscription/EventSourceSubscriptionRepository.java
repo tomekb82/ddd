@@ -11,6 +11,8 @@ public class EventSourceSubscriptionRepository implements SubscriptionRepository
 
     private final Map<SubscriptionId, List<DomainEvent>> storedEvents = new HashMap<>();
 
+    private final Map<SubscriptionId, Subscription> snapshots = new HashMap<>();
+
     @Override
     public void save(Subscription subscription) {
         List<DomainEvent> currentSteam = storedEvents.getOrDefault(subscription.id(), new ArrayList<>());
@@ -21,6 +23,18 @@ public class EventSourceSubscriptionRepository implements SubscriptionRepository
 
     @Override
     public Subscription findById(SubscriptionId subscriptionId) {
-        return Subscription.recreateFrom(storedEvents.get(subscriptionId), new Subscription(Clock.systemDefaultZone(), subscriptionId));
+        return Subscription.recreateFrom(storedEvents.get(subscriptionId),
+                new Subscription(Clock.systemDefaultZone(), subscriptionId));
+    }
+
+    @Override
+    public void saveSnapshot(SubscriptionId subscriptionId) {
+        snapshots.put(subscriptionId, findById(subscriptionId));
+        storedEvents.remove(subscriptionId);
+    }
+
+    @Override
+    public Subscription getSnapshot(SubscriptionId subscriptionId) {
+        return snapshots.get(subscriptionId);
     }
 }
