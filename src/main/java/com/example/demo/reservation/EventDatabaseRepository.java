@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class EventDatabaseRepository implements EventRepository {
+public class EventDatabaseRepository implements EventRepository {
 
     Map<EventId, Event> events = new HashMap<>();
 

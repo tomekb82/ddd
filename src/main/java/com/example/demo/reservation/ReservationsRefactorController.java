@@ -2,6 +2,7 @@ package com.example.demo.reservation;
 
 import com.example.demo.reservation.acl.LendingACL;
 import com.example.demo.reservation.acl.reconsiliation.Reconciliation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,28 +13,27 @@ import java.util.UUID;
 @RestController
 public class ReservationsRefactorController {
 
+    @Autowired
+    LendingACL lendingACL;
+
     private final RoomReservationService roomReservationService
             = new RoomReservationService(
                     new RoomDatabaseRepository(),
                     new ReservationDatabaseRepository(),
                     new EventDatabaseRepository());
 
-    private final RoomReservationRefactorService roomReservationRefactorService
-            = new RoomReservationRefactorService(
-            new RoomDatabaseRepository(),
-            new ReservationDatabaseRepository(),
-            new EventDatabaseRepository());
-    Reconciliation reconciliation = new Reconciliation();
-    ReservationFacade reservationFacade = new ReservationFacade(roomReservationRefactorService);
-    LendingACL lendingACL = new LendingACL(reconciliation, reservationFacade);
 
     @PostMapping("api/ref/rooms")
     ResponseEntity addRooms() {
-        Room room = new Room(new RoomId(UUID.randomUUID()), 21, List.of());
+        Room room = Room.builder()
+                .roomId(new RoomId(UUID.randomUUID()))
+                .number( 21)
+                .reservations(List.of())
+                .build();
         Room saved = roomReservationService.addRoom(room);
         Room result = lendingACL.addRoom(room, saved);
         return ResponseEntity
-                .created(URI.create(String.format("/api/rooms/{}", result.roomId())))
+                .created(URI.create(String.format("/api/rooms/{}", result.getRoomId().id())))
                 .build();
     }
 }

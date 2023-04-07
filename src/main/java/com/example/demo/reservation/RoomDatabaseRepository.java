@@ -8,14 +8,16 @@ public class RoomDatabaseRepository implements RoomRepository{
 
     @Override
     public Room add(Room room) {
-        Room toSave = new Room(new RoomId(UUID.randomUUID()), room.number(), room.reservations());
-        rooms.put(room.roomId(), toSave);
+        Room toSave = room.toBuilder()
+                .roomId(new RoomId(UUID.randomUUID()))
+                .build();
+        rooms.put(room.getRoomId(), toSave);
         return toSave;
     }
 
     @Override
     public void update(Room room) {
-        rooms.put(room.roomId(), room);
+        rooms.put(room.getRoomId(), room);
     }
 
     @Override

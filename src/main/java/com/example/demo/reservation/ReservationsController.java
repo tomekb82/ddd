@@ -20,7 +20,7 @@ public class ReservationsController {
     ResponseEntity addRoom(@RequestBody Room room) {
         Room saved = roomReservationService.addRoom(room);
         return ResponseEntity
-                .created(URI.create(String.format("/api/rooms/{}", saved.roomId())))
+                .created(URI.create(String.format("/api/rooms/{}", saved.getRoomId().id())))
                 .build();
     }
 
