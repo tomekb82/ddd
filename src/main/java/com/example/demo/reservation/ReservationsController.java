@@ -89,11 +89,11 @@ public class ReservationsController {
         return ResponseEntity.accepted().build();
     }
 
-    @PutMapping("/rooms/{roomId}/reservations/{id}")
+   /* @PutMapping("/rooms/{roomId}/reservations/{id}")
     ResponseEntity cancelReservation(@PathVariable UUID roomId, @PathVariable UUID reservationId) {
         roomReservationService.cancelReservation(new ReservationId(reservationId));
         return ResponseEntity.accepted().build();
-    }
+    }*/
 
     @PostMapping("/events")
     ResponseEntity addEvent(@RequestBody Event event) {
